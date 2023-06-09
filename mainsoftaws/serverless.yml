@@ -1,0 +1,67 @@
+service: mainsoftaws
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  iamRoleStatements:
+    - Effect: Allow
+      Action: 
+        - dynamodb:*
+      Resource:
+        - arn:aws:dynamodb:us-east-1:166106543438:table/MainsoftTable
+
+
+functions:
+  api:
+    handler: src/index.handler
+    events:
+      - httpApi:
+          path: /
+          method: get
+  createCompany:
+    handler: src/controllers/company/create-company-controller.createCompanyController
+    events:
+      - httpApi:
+          path: /company
+          method: post
+  getCompany:
+    handler: src/controllers/company/get-company-controller.getAllCompaniesController
+    events:
+      - httpApi:
+          path: /company
+          method: get
+  getCompanyByNit:
+    handler: src/controllers/company/get-company-by-nit-controller.getCompanyByNitController
+    events:
+      - httpApi:
+          path: /company/{nit}
+          method: get
+  updateCompany:
+    handler: src/controllers/company/update-company-controller.updateCompanyController
+    events:
+      - httpApi:
+          path: /company/{nit}
+          method: put
+  deleteCompany:
+    handler: src/controllers/company/delete-company-controller.deleteCompanyController
+    events:
+      - httpApi:
+          path: /company/{nit}
+          method: delete
+
+resources: # CloudFormation template syntax
+  Resources:
+    MainsoftTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: MainsoftTable
+        AttributeDefinitions:
+          - AttributeName: nit
+            AttributeType: S
+        KeySchema:
+          - AttributeName: nit
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
