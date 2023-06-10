@@ -5,22 +5,23 @@ import * as jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { Table } from 'primeng/table';
+import { Subscription } from 'rxjs';
 
 
 interface Product {
-  productName: string;
-  description: string;
-  image: string;
-  quantity: number;
-  price: number;
+  productName?: string;
+  description?: string;
+  image?: string;
+  quantity?: number;
+  price?: number;
 }
 
 interface Company {
   companyName: string;
   nit: string;
-  address: string;
-  phone: string;
-  products: Product[];
+  address?: string;
+  phone?: string;
+  products?: Product[];
 }
 
 
@@ -37,6 +38,7 @@ export class CompanyComponent implements OnInit {
   companies: Company[] = [];
   exportColumns!: any[];
   products: any[] = [];
+  selectedCompany!: Company[];
 
   newCompany: Company = {
     companyName: '',
@@ -61,7 +63,8 @@ export class CompanyComponent implements OnInit {
 
   constructor(
     private companyService: CompanyService,
-    private messageService: MessageService
+    private messageService: MessageService,
+    private confirmationService: ConfirmationService
     ) {
     this.exportColumns = [
       { field: 'productName', header: 'Product Name' },
@@ -73,9 +76,93 @@ export class CompanyComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.getCompanies();
+  }
+
+  getCompanies(){
     this.companyService.getCompanies().subscribe((response: any) => {
       this.companies = response.body;
       this.products = response.body.products; // Assuming the response contains a 'products' property
+    });
+  }
+
+  saveCompany() {
+    this.submittedCompany = true;
+
+    if (this.newCompany.companyName && this.newCompany.nit && this.newCompany.address && this.newCompany.phone) {
+      const newCompany = {
+        companyName: this.newCompany.companyName,
+        nit: this.newCompany.nit,
+        address: this.newCompany.address,
+        phone: this.newCompany.phone,
+        products: []
+      };
+
+      // this.companies.push(newCompany);
+
+      this.companyService.createCompany(newCompany).subscribe(
+        () => {
+          this.companies.push(newCompany);
+
+          if (this.product.productName && this.product.description && this.product.image && this.product.quantity && this.product.price) {
+            this.newCompany?.products?.push(this.product);
+            this.hideCompanyDialog();
+          }
+
+          this.messageService.add({ severity: 'success', summary: 'Successful', detail: 'Company Created', life: 3000 });
+          this.hideCompanyDialog();
+        },
+        (error) => {
+          console.error('Error creating company:', error);
+          // Handle error accordingly, e.g., show error message
+        }
+      );
+    }
+  }
+
+  editSelectedCompany() {
+    this.newCompany = this.selectedCompany[0]
+    this.companyDialog = true;
+  }
+
+  deleteSelectedCompany() {
+    console.log('selectedCompany', this.selectedCompany);
+    this.confirmationService.confirm({
+      message: 'Are you sure you want to delete this company?',
+      header: 'Confirm',
+      icon: 'pi pi-exclamation-triangle',
+      accept: () => {
+        const deletionSubscriptions: Subscription[] = [];
+
+        this.selectedCompany.map(company => {
+          console.log('company.nit', company);
+          const deletionSubscription = this.companyService.deleteCompany(company.nit).subscribe(
+            () => {
+              this.companies = this.companies.filter(
+                (val) => val.nit !== company.nit
+              );
+            },
+            (error) => {
+              console.error('Error deleting company:', error);
+              // Handle error accordingly, e.g., show error message
+            }
+          );
+
+          deletionSubscriptions.push(deletionSubscription);
+        });
+
+        this.selectedCompany = [];
+
+        deletionSubscriptions.forEach((subscription) => subscription.unsubscribe());
+
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Successful',
+          detail: 'Company Deleted',
+          life: 3000,
+        });
+        this.getCompanies();
+      },
     });
   }
 
@@ -119,38 +206,6 @@ export class CompanyComponent implements OnInit {
   searchGlobalFilter(event: Event) {
     const filterValue = (event.target as HTMLInputElement).value;
     this.table?.filterGlobal(filterValue, 'contains');
-  }
-
-
-  saveCompany() {
-    this.submittedCompany = true;
-
-    if (this.newCompany.companyName && this.newCompany.nit && this.newCompany.address && this.newCompany.phone) {
-      // Perform the logic to save the new company
-      // You can access the company data using the this.newCompany object
-      const newCompany = {
-        companyName: this.newCompany.companyName,
-        nit: this.newCompany.nit,
-        address: this.newCompany.address,
-        phone: this.newCompany.phone,
-        products: []
-      };
-      this.companies.push(newCompany);
-
-      if (this.product.productName && this.product.description && this.product.image && this.product.quantity && this.product.price) {
-        // Perform the logic to save the new product
-        // You can access the product data using the this.product object
-
-        // After saving the product, you can push it to the existing company's products array
-        this.newCompany.products.push(this.product);
-
-        this.hideProductDialog();
-      }
-
-      this.messageService.add({ severity: 'success', summary: 'Successful', detail: 'Company Created', life: 3000 });
-
-      this.hideCompanyDialog();
-    }
   }
 
   openNewCompanyDialog() {
@@ -203,7 +258,7 @@ export class CompanyComponent implements OnInit {
       const companyIndex = this.companies.findIndex(company => company.nit === this.newCompany.nit);
       if (companyIndex !== -1) {
         // Push the product to the products array of the found company
-        this.companies[companyIndex].products.push(this.product);
+        this.companies[companyIndex]?.products?.push(this.product);
 
         // Save the company to persist the changes
         this.saveCompany();
@@ -212,8 +267,5 @@ export class CompanyComponent implements OnInit {
       this.hideProductDialog();
     }
   }
-
-
-
 
 }
