@@ -1,0 +1,165 @@
+<div class="card">
+  <p-toolbar styleClass="mb-4 gap-2">
+    <h5 class="m-0">Manage Company</h5>
+    <ng-template pTemplate="left">
+        <button pButton pRipple label="New" icon="pi pi-plus" class="p-button-success mr-2" (click)="openNewCompanyDialog()"></button>
+    </ng-template>
+  </p-toolbar>
+  <p-table
+    #dt
+    [value]="companies"
+    [rows]="10"
+    [paginator]="true"
+    dataKey="nit"
+    [tableStyle]="{ 'min-width': '75rem' }"
+    [rowHover]="true"
+    currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
+  >
+
+    <!-- Caption template -->
+    <ng-template pTemplate="caption">
+      <div class="flex align-items-center justify-content-between">
+        <span class="p-input-icon-left">
+          <i class="pi pi-search"></i>
+          <input pInputText type="text" (input)="dt.filterGlobal($any($event.target).value, 'contains')" placeholder="Search..." />
+        </span>
+      </div>
+    </ng-template>
+
+    <!-- Header template -->
+    <ng-template pTemplate="header">
+      <tr>
+        <th style="width: 5rem"></th>
+        <th pSortableColumn="nit">Nit <p-sortIcon field="nit"></p-sortIcon></th>
+        <th pSortableColumn="companyName">Company Name <p-sortIcon field="companyName"></p-sortIcon></th>
+        <th pSortableColumn="address">Address <p-sortIcon field="address"></p-sortIcon></th>
+        <th pSortableColumn="phone">Phone <p-sortIcon field="phone"></p-sortIcon></th>
+      </tr>
+    </ng-template>
+
+    <!-- Body template -->
+    <ng-template pTemplate="body" let-company let-expanded="expanded">
+      <tr>
+        <td>
+          <button type="button" pButton pRipple [pRowToggler]="company"
+            class="p-button-text p-button-rounded p-button-plain"
+            [icon]="expanded ? 'pi pi-chevron-down' : 'pi pi-chevron-right'"></button>
+        </td>
+        <td>{{ company.nit }}</td>
+        <td>{{ company.companyName }}</td>
+        <td>{{ company.address }}</td>
+        <td>{{ company.phone }}</td>
+      </tr>
+    </ng-template>
+
+    <!-- Row expansion template -->
+    <ng-template pTemplate="rowexpansion" let-company>
+      <tr>
+        <td colspan="5">
+          <div class="p-3">
+            <p-table [value]="company.products" dataKey="productName">
+              <!-- Caption template for inner table -->
+              <ng-template pTemplate="caption">
+                <div class="flex">
+                  <button type="button" pButton pRipple icon="pi pi-file-pdf" (click)="exportPdf()"
+                    class="p-button-warning mr-2" pTooltip="PDF" tooltipPosition="bottom"></button>
+                    <button pButton pRipple label="Add Product" icon="pi pi-plus" class="p-button-text p-button-success" (click)="openNewProductDialog()"></button>
+                </div>
+              </ng-template>
+
+              <!-- Header template for inner table -->
+              <ng-template pTemplate="header">
+                <tr>
+                  <th pSortableColumn="productName">Product Name <p-sortIcon field="productName"></p-sortIcon></th>
+                  <th>Description</th>
+                  <th>Image</th>
+                  <th pSortableColumn="price">Price <p-sortIcon field="price"></p-sortIcon></th>
+                  <th pSortableColumn="quantity">Quantity <p-sortIcon field="quantity"></p-sortIcon></th>
+                </tr>
+              </ng-template>
+
+              <!-- Body template for inner table -->
+              <ng-template pTemplate="body" let-product>
+                <tr>
+                  <td>{{ product.productName }}</td>
+                  <td>{{ product.description }}</td>
+                  <td><img [src]="product.image" [alt]="product.productName" width="50" class="shadow-4" /></td>
+                  <td>{{ product.price | currency: 'USD' }}</td>
+                  <td>{{ product.quantity }}</td>
+                </tr>
+              </ng-template>
+
+              <!-- Empty message template for inner table -->
+              <ng-template pTemplate="emptymessage">
+                <tr>
+                  <td colspan="5">There are no products for this company yet.</td>
+                </tr>
+              </ng-template>
+            </p-table>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+
+  </p-table>
+</div>
+
+
+<p-dialog [(visible)]="companyDialog" [style]="{ width: '450px' }" header="New Company" [modal]="true" styleClass="p-fluid">
+  <ng-template pTemplate="content">
+    <div class="field">
+      <label for="companyName">Company Name</label>
+      <input type="text" pInputText id="companyName" [(ngModel)]="newCompany.companyName" required autofocus />
+      <small class="p-error" *ngIf="submittedCompany && !newCompany.companyName">Company Name is required.</small>
+    </div>
+    <div class="field">
+      <label for="nit">NIT</label>
+      <input type="text" pInputText id="nit" [(ngModel)]="newCompany.nit" required />
+    </div>
+    <div class="field">
+      <label for="address">Address</label>
+      <input type="text" pInputText id="address" [(ngModel)]="newCompany.address" required />
+    </div>
+    <div class="field">
+      <label for="phone">Phone</label>
+      <input type="text" pInputText id="phone" [(ngModel)]="newCompany.phone" required />
+    </div>
+
+  </ng-template>
+
+  <ng-template pTemplate="footer">
+    <button pButton pRipple label="Cancel" icon="pi pi-times" class="p-button-text" (click)="hideCompanyDialog()"></button>
+    <button pButton pRipple label="Save" icon="pi pi-check" class="p-button-text" (click)="saveCompany()"></button>
+  </ng-template>
+</p-dialog>
+
+<p-dialog [(visible)]="productDialog" [style]="{ width: '450px' }" header="New Product" [modal]="true" styleClass="p-fluid">
+  <ng-template pTemplate="content">
+    <div class="field">
+      <label for="productName">Product Name</label>
+      <input type="text" pInputText id="productName" [(ngModel)]="product.productName" required autofocus />
+      <small class="p-error" *ngIf="submitted && !product.productName">Product Name is required.</small>
+    </div>
+    <div class="field">
+      <label for="description">Description</label>
+      <input type="text" pInputText id="description" [(ngModel)]="product.description" required />
+    </div>
+    <div class="field">
+      <label for="image">Image</label>
+      <input type="text" pInputText id="image" [(ngModel)]="product.image" required />
+    </div>
+    <div class="field">
+      <label for="price">Price</label>
+      <input type="number" pInputText id="price" [(ngModel)]="product.price" required />
+    </div>
+    <div class="field">
+      <label for="quantity">Quantity</label>
+      <input type="number" pInputText id="quantity" [(ngModel)]="product.quantity" required />
+    </div>
+  </ng-template>
+
+  <ng-template pTemplate="footer">
+    <button pButton pRipple label="Cancel" icon="pi pi-times" class="p-button-text" (click)="hideProductDialog()"></button>
+    <button pButton pRipple label="Save" icon="pi pi-check" class="p-button-text" (click)="saveProduct()"></button>
+  </ng-template>
+</p-dialog>
