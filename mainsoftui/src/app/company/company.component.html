@@ -3,7 +3,7 @@
   <p-toolbar styleClass="mb-4 gap-2">
     <h3 class="m-0">Manage Company</h3>
     <ng-template pTemplate="left">
-      <button pButton pRipple label="New" icon="pi pi-plus" class="p-button-success mr-2" (click)="openNewCompanyDialog()"></button>
+      <button pButton pRipple label="New" icon="pi pi-plus" class="p-button-success mr-10" (click)="openNewCompanyDialog()"></button>
       <button pButton pRipple label="Delete" icon="pi pi-trash" class="p-button-danger" (click)="deleteSelectedCompany()" [disabled]="!selectedCompany || !selectedCompany.length"></button>
     </ng-template>
   </p-toolbar>
@@ -54,14 +54,16 @@
         <td>
           <button type="button" pButton pRipple [pRowToggler]="company"
             class="p-button-text p-button-rounded p-button-plain"
-            [icon]="expanded ? 'pi pi-chevron-down' : 'pi pi-chevron-right'"></button>
+            [icon]="expanded ? 'pi pi-chevron-down' : 'pi pi-chevron-right'" [value]="company"></button>
         </td>
         <td>{{ company.nit }}</td>
         <td>{{ company.companyName }}</td>
         <td>{{ company.address }}</td>
         <td>{{ company.phone }}</td>
         <td>
-          <button pButton pRipple icon="pi pi-pencil" class="p-button-rounded p-button-success" (click)="editSelectedCompany()" [disabled]="!selectedCompany || !selectedCompany.length"></button>
+          <button pButton pRipple pTooltip="Edit" tooltipPosition="bottom" icon="pi pi-pencil" class="p-button-rounded p-button-success mr-10" (click)="editSelectedCompany()" [disabled]="!selectedCompany || !selectedCompany.length"></button>
+          <button pButton pRipple pTooltip="Add Product" tooltipPosition="bottom" icon="pi pi-plus" class="p-button-roundend p-button-info mr-10" (click)="openNewProductDialog()" [disabled]="!selectedCompany || !selectedCompany.length"></button>
+          <button type="button" pButton pRipple pTooltip="PDF" tooltipPosition="bottom" icon="pi pi-file-pdf" (click)="exportPdf()" class="p-button-warning mr-2" [disabled]="!selectedCompany || !selectedCompany.length"></button>
           <!-- <button pButton pRipple icon="pi pi-trash" class="p-button-rounded p-button-warning" (click)="deleteCompany(company)"></button> -->
         </td>
       </tr>
@@ -70,37 +72,55 @@
     <!-- Row expansion template -->
     <ng-template pTemplate="rowexpansion" let-company>
       <tr>
-        <td colspan="5">
+        <td colspan="7">
           <div class="p-3">
-            <p-table [value]="company.products" dataKey="productName">
+            <p-table
+              [value]="company.products"
+              [rows]="5"
+              [paginator]="true"
+              dataKey="productId"
+              [tableStyle]="{ 'min-width': '65rem' }"
+              [rowHover]="true"
+              [(selection)]="selectedProduct"
+              currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
+            >
               <!-- Caption template for inner table -->
               <ng-template pTemplate="caption">
                 <div class="flex">
-                  <button type="button" pButton pRipple icon="pi pi-file-pdf" (click)="exportPdf()"
-                    class="p-button-warning mr-2" pTooltip="PDF" tooltipPosition="bottom"></button>
-                    <button pButton pRipple label="Add Product" icon="pi pi-plus" class="p-button-text p-button-success" (click)="openNewProductDialog()"></button>
+
                 </div>
               </ng-template>
 
               <!-- Header template for inner table -->
               <ng-template pTemplate="header">
                 <tr>
+                  <th style="width: 4rem">
+
+                  </th>
                   <th pSortableColumn="productName">Product Name <p-sortIcon field="productName"></p-sortIcon></th>
                   <th>Description</th>
                   <th>Image</th>
                   <th pSortableColumn="price">Price <p-sortIcon field="price"></p-sortIcon></th>
                   <th pSortableColumn="quantity">Quantity <p-sortIcon field="quantity"></p-sortIcon></th>
+                  <th></th>
                 </tr>
               </ng-template>
 
               <!-- Body template for inner table -->
               <ng-template pTemplate="body" let-product>
                 <tr>
+                  <td>
+                    <p-tableCheckbox [value]="product"></p-tableCheckbox>
+                  </td>
                   <td>{{ product.productName }}</td>
                   <td>{{ product.description }}</td>
                   <td><img [src]="product.image" [alt]="product.productName" width="50" class="shadow-4" /></td>
                   <td>{{ product.price | currency: 'USD' }}</td>
                   <td>{{ product.quantity }}</td>
+                  <td>
+                    <button pButton pRipple icon="pi pi-pencil" class="p-button-rounded p-button-success" (click)="editSelectedProduct()" [disabled]="!selectedProduct || !selectedProduct.length"></button>
+                    <!-- <button pButton pRipple icon="pi pi-trash" class="p-button-rounded p-button-warning" (click)="deleteCompany(company)"></button> -->
+                  </td>
                 </tr>
               </ng-template>
 
@@ -124,11 +144,12 @@
   <ng-template pTemplate="content">
     <div class="field">
       <label for="nit">NIT</label>
-      <input type="text" pInputText id="nit" [(ngModel)]="newCompany.nit" required />
+      <input type="text" pInputText id="nit" [(ngModel)]="newCompany.nit" required autofocus/>
+      <small class="p-error" *ngIf="submittedCompany && !newCompany.nit">NIT is required.</small>
     </div>
     <div class="field">
       <label for="companyName">Company Name</label>
-      <input type="text" pInputText id="companyName" [(ngModel)]="newCompany.companyName" required autofocus />
+      <input type="text" pInputText id="companyName" [(ngModel)]="newCompany.companyName" required />
       <small class="p-error" *ngIf="submittedCompany && !newCompany.companyName">Company Name is required.</small>
     </div>
     <div class="field">

@@ -1,3 +1,5 @@
+const { v4 } = require('uuid');
+
 class ProductValidator {
   static validateProducts(products) {
     if (!Array.isArray(products)) {
@@ -7,7 +9,9 @@ class ProductValidator {
     const validatedProducts = [];
 
     for (const product of products) {
-      const { description, image, price, productName, quantity } = product;
+      
+      const { productName, description, image, price, quantity } = product;
+
 
       if (description && (typeof description !== 'string' || description.trim() === '')) {
         throw new Error('Invalid product description.');
@@ -29,7 +33,8 @@ class ProductValidator {
         throw new Error('Invalid product quantity.');
       }
 
-      validatedProducts.push(product);
+      const productId = v4(); // Generate a unique product ID using v4()
+      validatedProducts.push({ ...product, productId });
     }
 
     return validatedProducts;

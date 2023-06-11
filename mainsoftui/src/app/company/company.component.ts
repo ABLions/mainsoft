@@ -1,14 +1,12 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { CompanyService } from '../service/company.service';
-// import { Company } from 'src/model/company.model';
-import * as jsPDF from 'jspdf';
-import 'jspdf-autotable';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { Table } from 'primeng/table';
 import { Subscription } from 'rxjs';
 
 
 interface Product {
+  productId?: string,
   productName?: string;
   description?: string;
   image?: string;
@@ -38,7 +36,13 @@ export class CompanyComponent implements OnInit {
   companies: Company[] = [];
   exportColumns!: any[];
   products: any[] = [];
-  selectedCompany!: Company[];
+  selectedCompany: Company[] = [];
+  selectedProduct!: Product[];
+  company: any[] = [];
+  submittedCompany: boolean = false;
+  companyDialog: boolean = false;
+  productDialog: boolean = false;
+  submitted: boolean = false;
 
   newCompany: Company = {
     companyName: '',
@@ -49,6 +53,7 @@ export class CompanyComponent implements OnInit {
   };
 
   product: Product = {
+    productId: '',
     productName: '',
     description: '',
     image: '',
@@ -56,24 +61,12 @@ export class CompanyComponent implements OnInit {
     price: 0,
   };
 
-  submittedCompany: boolean = false;
-  companyDialog: boolean = false;
-  productDialog: boolean = false;
-  submitted: boolean = false;
 
   constructor(
     private companyService: CompanyService,
     private messageService: MessageService,
     private confirmationService: ConfirmationService
-    ) {
-    this.exportColumns = [
-      { field: 'productName', header: 'Product Name' },
-      { field: 'description', header: 'Description' },
-      { field: 'image', header: 'Image' },
-      { field: 'price', header: 'Price' },
-      { field: 'quantity', header: 'Quantity' }
-    ];
-  }
+    ) {}
 
   ngOnInit(): void {
     this.getCompanies();
@@ -85,6 +78,30 @@ export class CompanyComponent implements OnInit {
       this.products = response.body.products; // Assuming the response contains a 'products' property
     });
   }
+
+  openNewCompanyDialog() {
+    this.newCompany = {
+      companyName: '',
+      nit: '',
+      address: '',
+      phone: '',
+      products: []
+    };
+    this.submittedCompany = false;
+    this.companyDialog = true;
+  }
+
+  hideCompanyDialog() {
+    this.companyDialog = false;
+    this.newCompany = {
+      companyName: '',
+      nit: '',
+      address: '',
+      phone: '',
+      products: []
+    };
+  }
+
 
   saveCompany() {
     this.submittedCompany = true;
@@ -152,7 +169,7 @@ export class CompanyComponent implements OnInit {
         });
 
         this.selectedCompany = [];
-
+        this.getCompanies();
         deletionSubscriptions.forEach((subscription) => subscription.unsubscribe());
 
         this.messageService.add({
@@ -161,26 +178,33 @@ export class CompanyComponent implements OnInit {
           detail: 'Company Deleted',
           life: 3000,
         });
-        this.getCompanies();
+
       },
     });
   }
 
   exportPdf() {
-    import('jspdf').then((jsPDFModule) => {
-      import('jspdf-autotable').then((autoTableModule) => {
-        const doc = new jsPDFModule.default('p', 'px', 'a4');
-        const tableData = [];
+    import('jspdf').then((jsPDF) => {
+      import('jspdf-autotable').then((module) => {
+        const { default: autoTable } = module;
 
-        for (const product of this.products) {
-          const rowData = [
-            product.productName,
-            product.description,
-            product.image,
-            product.price,
-            product.quantity
-          ];
-          tableData.push(rowData);
+        const doc = new jsPDF.default('p', 'px', 'a4');
+
+        const nit = this.selectedCompany[0]?.nit || '';
+        const companyName = this.selectedCompany[0]?.companyName || '';
+        const bodyData: any[] = [];
+        const products = this.selectedCompany[0]?.products;
+
+        if (products) {
+          products.forEach((product) => {
+            bodyData.push({
+              productName: product.productName || '',
+              description: product.description || '',
+              image: product.image || '',
+              price: product.price || '',
+              quantity: product.quantity || '',
+            });
+          });
         }
 
         const columns = [
@@ -188,16 +212,19 @@ export class CompanyComponent implements OnInit {
           { header: 'Description', dataKey: 'description' },
           { header: 'Image', dataKey: 'image' },
           { header: 'Price', dataKey: 'price' },
-          { header: 'Quantity', dataKey: 'quantity' }
+          { header: 'Quantity', dataKey: 'quantity' },
         ];
 
-        const header = columns.map((column) => column.header);
+        const columnStyles: { [key: string]: any } = {
+          productName: { cellWidth: 80 },
+          description: { cellWidth: 120 },
+          image: { cellWidth: 60 },
+          price: { cellWidth: 60 },
+          quantity: { cellWidth: 60 },
+        };
 
-        (autoTableModule as any).default(doc, {
-          head: [header],
-          body: tableData
-        });
-
+        doc.text(`NIT: ${nit} | Company Name: ${companyName}`, 30, 20);
+        autoTable(doc, { columns, body: bodyData, columnStyles });
         doc.save('products.pdf');
       });
     });
@@ -208,32 +235,12 @@ export class CompanyComponent implements OnInit {
     this.table?.filterGlobal(filterValue, 'contains');
   }
 
-  openNewCompanyDialog() {
-    this.newCompany = {
-      companyName: '',
-      nit: '',
-      address: '',
-      phone: '',
-      products: []
-    };
-    this.submittedCompany = false;
-    this.companyDialog = true;
-  }
 
-  hideCompanyDialog() {
-    this.companyDialog = false;
-    this.newCompany = {
-      companyName: '',
-      nit: '',
-      address: '',
-      phone: '',
-      products: []
-    };
-  }
 
   openNewProductDialog() {
     this.productDialog = true;
     this.product = {
+      productId: '',
       productName: '',
       description: '',
       image: '',
@@ -247,25 +254,38 @@ export class CompanyComponent implements OnInit {
     this.productDialog = false;
   }
 
+
   saveProduct() {
+
     this.submitted = true;
 
     if (this.product.productName && this.product.description && this.product.image && this.product.quantity && this.product.price) {
-      // Perform the logic to save the new product
-      // You can access the product data using the this.product object
+      const updatedCompany: Company = {
+        ...this.selectedCompany[0], // Copy the selected company
+        products: [...(this.selectedCompany[0].products || []), this.product] // Add the new product to the products array
+      };
 
-      // Find the company with the matching NIT in the companies array
-      const companyIndex = this.companies.findIndex(company => company.nit === this.newCompany.nit);
-      if (companyIndex !== -1) {
-        // Push the product to the products array of the found company
-        this.companies[companyIndex]?.products?.push(this.product);
+      this.companyService.updateCompany(updatedCompany.nit, updatedCompany).subscribe(
+        () => {
+          const companyIndex = this.companies.findIndex(company => company.nit === updatedCompany.nit);
+          if (companyIndex !== -1) {
+            this.companies[companyIndex] = updatedCompany; // Update the company in the companies array
+          }
 
-        // Save the company to persist the changes
-        this.saveCompany();
-      }
-
-      this.hideProductDialog();
+          this.messageService.add({ severity: 'success', summary: 'Successful', detail: 'Product Added', life: 3000 });
+          this.hideProductDialog();
+        },
+        (error) => {
+          console.error('Error updating company:', error);
+          // Handle error accordingly, e.g., show error message
+        }
+      );
     }
+  }
+
+  editSelectedProduct(){
+    this.product = this.selectedProduct[0]
+    this.productDialog = true;
   }
 
 }
