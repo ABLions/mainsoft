@@ -64,7 +64,6 @@
           <button pButton pRipple pTooltip="Edit" tooltipPosition="bottom" icon="pi pi-pencil" class="p-button-rounded p-button-success mr-10" (click)="editSelectedCompany()" [disabled]="!selectedCompany || !selectedCompany.length"></button>
           <button pButton pRipple pTooltip="Add Product" tooltipPosition="bottom" icon="pi pi-plus" class="p-button-roundend p-button-info mr-10" (click)="openNewProductDialog()" [disabled]="!selectedCompany || !selectedCompany.length"></button>
           <button type="button" pButton pRipple pTooltip="PDF" tooltipPosition="bottom" icon="pi pi-file-pdf" (click)="exportPdf()" class="p-button-warning mr-2" [disabled]="!selectedCompany || !selectedCompany.length"></button>
-          <!-- <button pButton pRipple icon="pi pi-trash" class="p-button-rounded p-button-warning" (click)="deleteCompany(company)"></button> -->
         </td>
       </tr>
     </ng-template>
@@ -110,7 +109,7 @@
               <ng-template pTemplate="body" let-product>
                 <tr>
                   <td>
-                    <p-tableCheckbox [value]="product"></p-tableCheckbox>
+                    <p-tableCheckbox [value]="product" [disabled]="!selectedCompany || !selectedCompany.length"></p-tableCheckbox>
                   </td>
                   <td>{{ product.productName }}</td>
                   <td>{{ product.description }}</td>
@@ -118,8 +117,8 @@
                   <td>{{ product.price | currency: 'USD' }}</td>
                   <td>{{ product.quantity }}</td>
                   <td>
-                    <button pButton pRipple icon="pi pi-pencil" class="p-button-rounded p-button-success mr-10" (click)="editSelectedProduct()" [disabled]="!selectedProduct || !selectedProduct.length"></button>
-                    <button pButton pRipple icon="pi pi-trash" class="p-button-rounded p-button-danger" (click)="deleteProduct(product)" [disabled]="!selectedProduct || !selectedProduct.length"></button>
+                    <button pButton pRipple icon="pi pi-pencil" class="p-button-rounded p-button-success mr-10" (click)="editSelectedProduct()" [disabled]="!selectedCompany || !selectedCompany.length"></button>
+                    <button pButton pRipple icon="pi pi-trash" class="p-button-rounded p-button-danger" (click)="deleteProduct(product)" [disabled]="!selectedCompany || !selectedCompany.length"></button>
                   </td>
                 </tr>
               </ng-template>
@@ -186,11 +185,11 @@
     </div>
     <div class="field">
       <label for="price">Price</label>
-      <input type="number" pInputText id="price" [(ngModel)]="product.price" required />
+      <input type="number" pInputText id="price" [min]="0" [(ngModel)]="product.price" required />
     </div>
     <div class="field">
       <label for="quantity">Quantity</label>
-      <input type="number" pInputText id="quantity" [(ngModel)]="product.quantity" required />
+      <input type="number" pInputText id="quantity" [min]="0" [(ngModel)]="product.quantity" required />
     </div>
   </ng-template>
 

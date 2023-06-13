@@ -37,7 +37,7 @@ export class CompanyComponent implements OnInit {
   exportColumns!: any[];
   products: any[] = [];
   selectedCompany: Company[] = [];
-  selectedProduct!: Product[];
+  selectedProduct: Product[] = [];
   company: any[] = [];
   submittedCompany: boolean = false;
   companyDialog: boolean = false;
@@ -119,7 +119,7 @@ export class CompanyComponent implements OnInit {
 
       this.companyService.createCompany(newCompany).subscribe(
         () => {
-          this.companies.push(newCompany);
+          // this.companies.push(newCompany);
 
           if (this.product.productName && this.product.description && this.product.image && this.product.quantity && this.product.price) {
             this.newCompany?.products?.push(this.product);
@@ -128,6 +128,7 @@ export class CompanyComponent implements OnInit {
 
           this.messageService.add({ severity: 'success', summary: 'Successful', detail: 'Company Created', life: 3000 });
           this.hideCompanyDialog();
+          this.getCompanies();
         },
         (error) => {
           console.error('Error creating company:', error);
@@ -155,8 +156,7 @@ export class CompanyComponent implements OnInit {
           console.log('company.nit', company);
           const deletionSubscription = this.companyService.deleteCompany(company.nit).subscribe(
             () => {
-              this.companies = this.companies.filter((val) => val.nit !== company.nit
-              );
+              this.companies = this.companies.filter((val) => val.nit !== company.nit);
               this.getCompanies();
             },
             (error) => {
@@ -274,7 +274,8 @@ export class CompanyComponent implements OnInit {
 
             this.messageService.add({ severity: 'success', summary: 'Successful', detail: 'Product Added', life: 3000 });
             this.hideProductDialog();
-            this.selectedCompany = [updatedCompany]
+            this.selectedCompany = [updatedCompany];
+            this.selectedProduct = [];
           },
           (error) => {
             console.error('Error updating company:', error);
@@ -301,26 +302,29 @@ export class CompanyComponent implements OnInit {
           const productId = product.productId;
           const updatedProducts = this.selectedCompany[0]?.products?.filter(p => p.productId !== productId);
 
-          const updatedCompany: Company = {
-            ...this.selectedCompany[0],
-            products: updatedProducts
-          };
+          if (updatedProducts) {
+            const updatedCompany: Company = {
+              ...this.selectedCompany[0],
+              products: updatedProducts
+            };
 
-          this.companyService.updateCompany(updatedCompany.nit, updatedCompany).subscribe(
-            () => {
-              const companyIndex = this.companies.findIndex(company => company.nit === updatedCompany.nit);
-              if (companyIndex !== -1) {
-                this.companies[companyIndex] = updatedCompany;
+            this.companyService.updateCompany(updatedCompany.nit, updatedCompany).subscribe(
+              () => {
+                const companyIndex = this.companies.findIndex(company => company.nit === updatedCompany.nit);
+                if (companyIndex !== -1) {
+                  this.companies[companyIndex] = updatedCompany;
+                }
+
+                this.selectedCompany = [updatedCompany];
+                this.messageService.add({ severity: 'success', summary: 'Successful', detail: 'Product Deleted', life: 3000 });
+              },
+              (error) => {
+                console.error('Error updating company:', error);
+                // Handle error accordingly, e.g., show error message
               }
+            );
+          }
 
-              this.selectedCompany = [updatedCompany];
-              this.messageService.add({ severity: 'success', summary: 'Successful', detail: 'Product Deleted', life: 3000 });
-            },
-            (error) => {
-              console.error('Error updating company:', error);
-              // Handle error accordingly, e.g., show error message
-            }
-          );
         }
       });
 
