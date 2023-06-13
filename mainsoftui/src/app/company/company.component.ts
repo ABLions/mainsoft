@@ -2,26 +2,8 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { CompanyService } from '../service/company.service';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { Table } from 'primeng/table';
-import { Subscription } from 'rxjs';
-
-
-interface Product {
-  productId?: string,
-  productName?: string;
-  description?: string;
-  image?: string;
-  quantity?: number;
-  price?: number;
-}
-
-interface Company {
-  companyName: string;
-  nit: string;
-  address?: string;
-  phone?: string;
-  products?: Product[];
-}
-
+import { Product } from './../interface/product';
+import { Company } from './../interface/company';
 
 @Component({
   selector: 'app-company',
