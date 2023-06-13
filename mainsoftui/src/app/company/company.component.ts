@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, Input, OnInit, ViewChild } from '@angular/core';
 import { CompanyService } from '../service/company.service';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { Table } from 'primeng/table';
@@ -13,7 +13,8 @@ import { Company } from './../interface/company';
 })
 
 export class CompanyComponent implements OnInit {
-
+  @Input()
+  username!: string;
   @ViewChild('dt', { static: false }) table: Table | undefined;
   companies: Company[] = [];
   exportColumns!: any[];

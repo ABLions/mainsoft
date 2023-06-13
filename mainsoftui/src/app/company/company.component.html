@@ -3,8 +3,8 @@
   <p-toolbar styleClass="mb-4 gap-2">
     <h3 class="m-0">Manage Company</h3>
     <ng-template pTemplate="left">
-      <button pButton pRipple label="New" icon="pi pi-plus" class="p-button-success mr-10" (click)="openNewCompanyDialog()"></button>
-      <button pButton pRipple label="Delete" icon="pi pi-trash" class="p-button-danger" (click)="deleteSelectedCompany()" [disabled]="!selectedCompany || !selectedCompany.length"></button>
+      <button *ngIf="username === 'admin'" pButton pRipple label="New" icon="pi pi-plus" class="p-button-success mr-10" (click)="openNewCompanyDialog()"></button>
+      <button *ngIf="username === 'admin'" pButton pRipple label="Delete" icon="pi pi-trash" class="p-button-danger" (click)="deleteSelectedCompany()" [disabled]="!selectedCompany || !selectedCompany.length"></button>
     </ng-template>
   </p-toolbar>
   <p-table
@@ -61,8 +61,8 @@
         <td>{{ company.address }}</td>
         <td>{{ company.phone }}</td>
         <td>
-          <button pButton pRipple pTooltip="Edit" tooltipPosition="bottom" icon="pi pi-pencil" class="p-button-rounded p-button-success mr-10" (click)="editSelectedCompany()" [disabled]="!selectedCompany || !selectedCompany.length"></button>
-          <button pButton pRipple pTooltip="Add Product" tooltipPosition="bottom" icon="pi pi-plus" class="p-button-roundend p-button-info mr-10" (click)="openNewProductDialog()" [disabled]="!selectedCompany || !selectedCompany.length"></button>
+          <button *ngIf="username === 'admin'" pButton pRipple pTooltip="Edit" tooltipPosition="bottom" icon="pi pi-pencil" class="p-button-rounded p-button-success mr-10" (click)="editSelectedCompany()" [disabled]="!selectedCompany || !selectedCompany.length"></button>
+          <button *ngIf="username === 'admin'" pButton pRipple pTooltip="Add Product" tooltipPosition="bottom" icon="pi pi-plus" class="p-button-roundend p-button-info mr-10" (click)="openNewProductDialog()" [disabled]="!selectedCompany || !selectedCompany.length"></button>
           <button type="button" pButton pRipple pTooltip="PDF" tooltipPosition="bottom" icon="pi pi-file-pdf" (click)="exportPdf()" class="p-button-warning mr-2" [disabled]="!selectedCompany || !selectedCompany.length"></button>
         </td>
       </tr>
@@ -117,8 +117,8 @@
                   <td>{{ product.price | currency: 'USD' }}</td>
                   <td>{{ product.quantity }}</td>
                   <td>
-                    <button pButton pRipple icon="pi pi-pencil" class="p-button-rounded p-button-success mr-10" (click)="editSelectedProduct()" [disabled]="!selectedCompany || !selectedCompany.length"></button>
-                    <button pButton pRipple icon="pi pi-trash" class="p-button-rounded p-button-danger" (click)="deleteProduct(product)" [disabled]="!selectedCompany || !selectedCompany.length"></button>
+                    <button *ngIf="username === 'admin'" pButton pRipple icon="pi pi-pencil" class="p-button-rounded p-button-success mr-10" (click)="editSelectedProduct()" [disabled]="!selectedCompany || !selectedCompany.length"></button>
+                    <button *ngIf="username === 'admin'" pButton pRipple icon="pi pi-trash" class="p-button-rounded p-button-danger" (click)="deleteProduct(product)" [disabled]="!selectedCompany || !selectedCompany.length"></button>
                   </td>
                 </tr>
               </ng-template>
