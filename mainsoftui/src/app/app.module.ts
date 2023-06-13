@@ -99,10 +99,20 @@ import { BlockUIModule } from 'primeng/blockui';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { CompanyService } from './service/company.service';
 
+import { Amplify } from 'aws-amplify';
+import awsconfig from './../aws-exports';
+import { AmplifyAuthenticatorModule } from '@aws-amplify/ui-angular';
+import { AuthComponent } from './auth/auth.component';
+import { HomeComponent } from './home/home.component';
+
+Amplify.configure(awsconfig);
+
 @NgModule({
   declarations: [
     AppComponent,
     CompanyComponent,
+    AuthComponent,
+    HomeComponent,
   ],
   imports: [
     AppRoutingModule,
@@ -110,6 +120,7 @@ import { CompanyService } from './service/company.service';
     DialogModule,
     AvatarModule,
     BrowserModule,
+    AmplifyAuthenticatorModule,
     FormsModule,
     HttpClientModule,
     ReactiveFormsModule,

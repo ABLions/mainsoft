@@ -19,6 +19,8 @@
     "@angular/platform-browser": "^16.0.0",
     "@angular/platform-browser-dynamic": "^16.0.0",
     "@angular/router": "^16.0.0",
+    "@aws-amplify/ui-angular": "^3.2.18",
+    "aws-amplify": "^5.2.5",
     "chart.js": "^4.3.0",
     "font-awesome": "^4.7.0",
     "jspdf": "^2.5.1",

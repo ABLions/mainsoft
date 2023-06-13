@@ -1,0 +1,12 @@
+<amplify-authenticator>
+  <ng-template
+    amplifySlot="authenticated"
+    let-user="user"
+    let-signOut="signOut"
+  >
+    <h1>Welcome {{ user.username }}!</h1>
+    <button pButton pRipple pTooltip="Logout" tooltipPosition="bottom" icon="pi pi-sign-in" class="p-button-roundend p-button-info mr-10 logout" (click)="signOut()"></button>
+    <app-home></app-home>
+  </ng-template>
+</amplify-authenticator>
+
