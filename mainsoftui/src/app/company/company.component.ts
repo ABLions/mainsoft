@@ -149,15 +149,15 @@ export class CompanyComponent implements OnInit {
       header: 'Confirm',
       icon: 'pi pi-exclamation-triangle',
       accept: () => {
-        const deletionSubscriptions: Subscription[] = [];
+        // const deletionSubscriptions: Subscription[] = [];
 
         this.selectedCompany.map(company => {
           console.log('company.nit', company);
           const deletionSubscription = this.companyService.deleteCompany(company.nit).subscribe(
             () => {
-              this.companies = this.companies.filter(
-                (val) => val.nit !== company.nit
+              this.companies = this.companies.filter((val) => val.nit !== company.nit
               );
+              this.getCompanies();
             },
             (error) => {
               console.error('Error deleting company:', error);
@@ -165,12 +165,12 @@ export class CompanyComponent implements OnInit {
             }
           );
 
-          deletionSubscriptions.push(deletionSubscription);
+          // deletionSubscriptions.push(deletionSubscription);
         });
 
+
         this.selectedCompany = [];
-        this.getCompanies();
-        deletionSubscriptions.forEach((subscription) => subscription.unsubscribe());
+        // deletionSubscriptions.forEach((subscription) => subscription.unsubscribe());
 
         this.messageService.add({
           severity: 'success',
@@ -255,37 +255,78 @@ export class CompanyComponent implements OnInit {
   }
 
 
-  saveProduct() {
+  addProduct() {
+    try {
+      this.submitted = true;
 
-    this.submitted = true;
+      if (this.product.productName && this.product.quantity && this.product.price) {
+        const updatedCompany: Company = {
+          ...this.selectedCompany[0], // Copy the selected company
+          products: [...(this.selectedCompany[0].products || []), this.product] // Add the new product to the products array
+        };
 
-    if (this.product.productName && this.product.description && this.product.image && this.product.quantity && this.product.price) {
-      const updatedCompany: Company = {
-        ...this.selectedCompany[0], // Copy the selected company
-        products: [...(this.selectedCompany[0].products || []), this.product] // Add the new product to the products array
-      };
+        this.companyService.updateCompany(updatedCompany.nit, updatedCompany).subscribe(
+          () => {
+            const companyIndex = this.companies.findIndex(company => company.nit === updatedCompany.nit);
+            if (companyIndex !== -1) {
+              this.companies[companyIndex] = updatedCompany; // Update the company in the companies array
+            }
 
-      this.companyService.updateCompany(updatedCompany.nit, updatedCompany).subscribe(
-        () => {
-          const companyIndex = this.companies.findIndex(company => company.nit === updatedCompany.nit);
-          if (companyIndex !== -1) {
-            this.companies[companyIndex] = updatedCompany; // Update the company in the companies array
+            this.messageService.add({ severity: 'success', summary: 'Successful', detail: 'Product Added', life: 3000 });
+            this.hideProductDialog();
+            this.selectedCompany = [updatedCompany]
+          },
+          (error) => {
+            console.error('Error updating company:', error);
+            // Handle error accordingly, e.g., show error message
           }
+        );
+      }
 
-          this.messageService.add({ severity: 'success', summary: 'Successful', detail: 'Product Added', life: 3000 });
-          this.hideProductDialog();
-        },
-        (error) => {
-          console.error('Error updating company:', error);
-          // Handle error accordingly, e.g., show error message
-        }
-      );
+    } catch (error) {
+      console.log(error);
     }
   }
 
   editSelectedProduct(){
     this.product = this.selectedProduct[0]
     this.productDialog = true;
+  }
+
+  deleteProduct(product: Product) {
+    try {
+      this.confirmationService.confirm({
+        message: 'Are you sure you want to delete this product?',
+        accept: () => {
+          const productId = product.productId;
+          const updatedProducts = this.selectedCompany[0]?.products?.filter(p => p.productId !== productId);
+
+          const updatedCompany: Company = {
+            ...this.selectedCompany[0],
+            products: updatedProducts
+          };
+
+          this.companyService.updateCompany(updatedCompany.nit, updatedCompany).subscribe(
+            () => {
+              const companyIndex = this.companies.findIndex(company => company.nit === updatedCompany.nit);
+              if (companyIndex !== -1) {
+                this.companies[companyIndex] = updatedCompany;
+              }
+
+              this.selectedCompany = [updatedCompany];
+              this.messageService.add({ severity: 'success', summary: 'Successful', detail: 'Product Deleted', life: 3000 });
+            },
+            (error) => {
+              console.error('Error updating company:', error);
+              // Handle error accordingly, e.g., show error message
+            }
+          );
+        }
+      });
+
+    } catch (error) {
+      console.log(error);
+    }
   }
 
 }
