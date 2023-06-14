@@ -16,5 +16,23 @@
         "mainsoftui782236e3": {}
       }
     }
+  },
+  "mainsoft": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-mainsoftui-mainsoft-213204-authRole",
+      "UnauthRoleArn": "arn:aws:iam::166106543438:role/amplify-mainsoftui-mainsoft-213204-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::166106543438:role/amplify-mainsoftui-mainsoft-213204-authRole",
+      "Region": "us-west-2",
+      "DeploymentBucketName": "amplify-mainsoftui-mainsoft-213204-deployment",
+      "UnauthRoleName": "amplify-mainsoftui-mainsoft-213204-unauthRole",
+      "StackName": "amplify-mainsoftui-mainsoft-213204",
+      "StackId": "arn:aws:cloudformation:us-west-2:166106543438:stack/amplify-mainsoftui-mainsoft-213204/a9611e40-0a5b-11ee-aa6e-0a479dcb02cd",
+      "AmplifyAppId": "dlmhy3xslc6gz"
+    },
+    "categories": {
+      "auth": {
+        "mainsoftui782236e3": {}
+      }
+    }
   }
 }

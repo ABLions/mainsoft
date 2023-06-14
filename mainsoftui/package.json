@@ -23,6 +23,7 @@
     "aws-amplify": "^5.2.5",
     "chart.js": "^4.3.0",
     "font-awesome": "^4.7.0",
+    "json-loader": "^0.5.7",
     "jspdf": "^2.5.1",
     "jspdf-autotable": "^3.5.29",
     "primeicons": "^6.0.1",
