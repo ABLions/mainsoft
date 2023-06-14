@@ -8,4 +8,9 @@ module.exports = {
       },
     ],
   },
+  // other webpack configuration options...
+  performance: {
+    hints: false,
+  },
+
 };
